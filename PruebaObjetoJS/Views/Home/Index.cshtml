@@ -1,31 +1,89 @@
 ﻿@{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Home Page";    
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+<textarea id="editor" rows="50"></textarea>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script src="https://cdn.ckeditor.com/4.10.0/standard-all/ckeditor.js"></script>
+    <script>
+        var _objCliente = @Html.Raw(ViewBag._cliente);      
+        var PLACEHOLDERS = [];
+
+        for (var i in _objCliente) {
+            if (_objCliente.hasOwnProperty(i)) {
+                PLACEHOLDERS.push(_objCliente[i]);
+            }
+        }
+
+        CKEDITOR.addCss('span > .cke_placeholder { background-color: #ffeec2; }');
+
+        CKEDITOR.replace('editor', {
+            plugins: 'autocomplete,textmatch,toolbar,wysiwygarea,basicstyles,undo,placeholder,justify',
+            //toolbar: [
+            //    { name: 'document', items: ['Undo', 'Redo'] },
+            //    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline'] },
+            //    { name: 'links', items: ['Link', 'Unlink'] }
+            //],
+            height: 340,
+            removeDialogTabs: 'image:advanced;link:advanced;link:target',
+            on: {
+                instanceReady: function (evt) {
+                    var itemTemplate = '<li data-id="{id}">' +
+                        '<div><strong class="item-title">{name}</strong></div>' +
+                        '<div><i>{description}</i></div>' +
+                        '</li>',
+                        outputTemplate = '[[{name}]]<span>&nbsp;</span>';
+
+                    var autocomplete = new CKEDITOR.plugins.autocomplete(evt.editor, {
+                        textTestCallback: textTestCallback,
+                        dataCallback: dataCallback,
+                        itemTemplate: itemTemplate,
+                        outputTemplate: outputTemplate
+                    });
+
+                    // Override default getHtmlToInsert to enable rich content output.
+                    autocomplete.getHtmlToInsert = function (item) {
+                        return this.outputTemplate.output(item);
+                    }
+                }
+            }
+        });
+
+        //CKEDITOR.instances.page_desc.getData();
+
+        function textTestCallback(range) {
+            if (!range.collapsed) {
+                return null;
+            }
+
+            return CKEDITOR.plugins.textMatch.match(range, matchCallback);
+        }
+
+        function matchCallback(text, offset) {
+            var pattern = /\[{2}([A-z]|\])*$/,
+                match = text.slice(0, offset)
+                    .match(pattern);
+
+            if (!match) {
+                return null;
+            }
+
+            return {
+                start: match.index,
+                end: offset
+            };
+        }
+
+        function dataCallback(matchInfo, callback) {
+            var data = PLACEHOLDERS.filter(function (item) {
+                var itemName = '[[' + item.name.toLowerCase() + ']]';
+                return itemName.indexOf(matchInfo.query.toLowerCase()) == 0;
+            });
+
+            callback(data);
+        }
+
+    </script>
+}

@@ -37,6 +37,8 @@ namespace PruebaObjetoJS.Models
             modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
             modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
+            //modelBuilder.Conventions.Remove<DecimalPropertyConvention>();
+            //modelBuilder.Properties<decimal>().Configure(x => x.HasColumnType("decimal").HasPrecision(16, 2));
         }
 
         public static ApplicationDbContext Create()

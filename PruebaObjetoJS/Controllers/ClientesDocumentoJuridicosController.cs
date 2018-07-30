@@ -40,6 +40,7 @@ namespace PruebaObjetoJS.Controllers
         // GET: ClientesDocumentoJuridicos/Create
         public ActionResult Create()
         {
+            Clientes _clientes;
             ViewBag.ClientesId = new SelectList(db.Clientes, "Id", "PrimerNombre");
             ViewBag.EmpresasId = new SelectList(db.Empresas, "Id", "Empresa");
             ViewBag.PlantillaDocumentosId = new SelectList(db.PlantillaDocumentos, "Id", "Plantilla");
@@ -50,13 +51,13 @@ namespace PruebaObjetoJS.Controllers
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             };
 
-            List<StringJson> _stringAux = StringAux(db.Clientes
+            List<StringJson> _stringAux = StringAux(_clientes = db.Clientes
                 .Include(d => d.Documentos.Select(t => t.TipoDocumentos))
                 .Include(c => c.CorreoElectronicos.Select(t => t.TipoCorreos))
                 .Include(d => d.Direcciones).FirstOrDefault(x => x.Id == 1));
 
-            ViewBag._cliente = JsonConvert.SerializeObject(_stringAux, _settings);
-
+            ViewBag._jsonDatos = JsonConvert.SerializeObject(_stringAux, _settings);
+            ViewBag._clientes = _clientes;
             return View();
         }
 
